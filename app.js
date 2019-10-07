@@ -1,17 +1,15 @@
 'use strict';
 
-const fs = require('fs');
+require('./src/events/logger');
 
-const alterFile = (file) => {
-  fs.readFile( file, (err, data) => {
-    if(err) { throw err; }
-    let text = data.toString().toUpperCase();
-    fs.writeFile( file, Buffer.from(text), (err, data) => {
-      if(err) { throw err; }
-      console.log(`${file} saved`);
-    });
-  });
-};
+const events = require('./src/events/file-events');
+const {readFile, writeFile} = require('./src/edit-file');
 
-let file = process.argv.slice(2).shift();
-alterFile(file);
+events.addListener('read', (file, data) => {
+  data = data.toString().toUpperCase();
+  writeFile(file, data);
+});
+
+if (process.argv.length > 2) {
+  readFile(process.argv.slice(2).shift());
+}
