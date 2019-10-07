@@ -6,7 +6,7 @@ const fs = require('fs');
 
 describe('mock fs', () => {
   describe('writeFile', () => {
-    it('throws if file is not a string', () => {
+    it(`throws if file is not a string`, () => {
       expect(() => {
         const cb = jest.fn();
         fs.writeFile(undefined, Buffer.from('test'), cb);
