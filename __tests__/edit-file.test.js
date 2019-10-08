@@ -1,22 +1,56 @@
 'use-strict';
 
 jest.mock('fs');
-jest.mock('../src/events/file-events');
-jest.mock('../src/edit-file');
 
-const {readFile, writeFile} = require('../src/edit-file');
+require('../src/events/logger');
+
+const {readFile, writeFile, uppercaseFile} = require('../src/edit-file');
 const events = require('../src/events/file-events');
 
-beforeAll(async () => {
-  readFile('testfile.txt');
-  console.log(events.emittedEvents);
-  await setTimeout(() => {}, 1000);
-});
-
 describe('Edit file', () => {
+
+  beforeEach(() => {
+    jest.spyOn(events, 'emit');
+  });
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('readFile', () => {
-    it('Can read files', () => {
-      readFile('testfile.txt');
+    it('Can read files', async () => {
+      await readFile('rando.txt');
+      expect(events.emit).toHaveBeenCalledWith('read', 'rando.txt', Buffer.from('rando.txt Contents'));
+    });
+    it('Cannot read files with malformed names', async () => {
+      await readFile('bad');
+      expect(events.emit).toHaveBeenCalledWith('error', 'Invalid File', 'read');
     })
+  });
+
+  describe('writeFile', () => {
+    it('Can write files', async () => {
+      await writeFile('rando.txt', 'stuff');
+      expect(events.emit).toHaveBeenCalledWith('write', 'rando.txt', Buffer.from('stuff'));
+    });
+
+    it('Cannot write files with malformed names', async () => {
+      await writeFile('bad.text', 'stuff');
+      expect(events.emit).toHaveBeenCalledWith('error', 'Invalid File', 'write');
+    });
+  });
+
+  describe('uppercaseFile', () => {
+    it('Will uppercase the contents of a valid file', async () => {
+      await uppercaseFile('rando.txt');
+      jest.restoreAllMocks();
+      jest.spyOn(events, 'emit');
+      await readFile('rando.txt');
+      expect(events.emit).toHaveBeenCalledWith('read', 'rando.txt', Buffer.from('STUFF'));
+    });
+
+    it('Will not work if the file name is invalid', async () => {
+      await uppercaseFile('bad.txt');
+      expect(events.emit).toHaveBeenCalledWith('error', 'Invalid File', 'read');
+    });
   });
 });

@@ -7,14 +7,17 @@ const events = require('./events/file-events');
 async function readFile(file) {
   let fileData;
   let readError;
-  await fs.readFile(file, (err, data) => {
+
+  await new Promise(resolve => fs.readFile(file, (err, data) => {
     readError = err;
     fileData = data;
-  });
+    resolve();
+  }));
+
   if (readError) {
-    events.emit('error', 'read', readError);
+    events.emit('error', readError, 'read');
   } else {
-    events.emit('open', file, fileData);
+    events.emit('read', file, fileData);
     return fileData;
   }
 }
@@ -22,16 +25,28 @@ async function readFile(file) {
 async function writeFile(file, data) {
   let writeError;
   if (!(data instanceof Buffer)) {
-    data = buffer.from(data);
+    data = Buffer.from(data);
   }
-  await fs.writeFile(file, data, (err) => {
+
+  await new Promise(resolve => fs.writeFile(file, data, (err) => {
     writeError = err;
-  });
+    resolve();
+  }));
+
   if (writeError) {
-    events.emit('error', 'write',readError);
+    events.emit('error', writeError, 'write');
   } else {
     events.emit('write', file, data);
   }
 }
 
-module.exports = exports = {readFile, writeFile};
+async function uppercaseFile(file) {
+  let fileData = await readFile(file);
+  if (!fileData) {
+    return;
+  }
+  fileData = Buffer.from(fileData.toString().toUpperCase());
+  await writeFile(file, fileData);
+}
+
+module.exports = exports = {readFile, writeFile, uppercaseFile};

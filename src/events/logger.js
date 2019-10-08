@@ -2,8 +2,8 @@
 
 const events = require('./file-events');
 
-events.addListener('error', (error, type) => console.err(`Experienced error duing ${type}: ${error}`));
+events.on('error', (error, type) => console.error(`Experienced error duing ${type}: ${error}`));
 
-events.addListener('read', (file, data) => console.log(`Read file "${file}": ${data}`));
+events.on('read', (file, data) => console.log(`Read file "${file}": ${data}`));
 
-events.addListener('write', file => console.log(`${file} saved.`));
+events.on('write', file => console.log(`${file} saved.`));
