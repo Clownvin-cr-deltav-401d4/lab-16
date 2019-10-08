@@ -24,7 +24,7 @@ describe('Edit file', () => {
     it('Cannot read files with malformed names', async () => {
       await readFile('bad');
       expect(events.emit).toHaveBeenCalledWith('error', 'Invalid File', 'read');
-    })
+    });
   });
 
   describe('writeFile', () => {
